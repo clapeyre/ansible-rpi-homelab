@@ -5,7 +5,7 @@
 # You can define more specific paths or settings here if needed
 # e.g., list of web app submodule directories if you wanted to loop over them
 web_app_submodules:
-  - Mouvement
+  - mouvement-2025-toulouse
   - pico-wallet-server
   # Add more as they are created in your Ansible project root
 

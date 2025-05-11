@@ -1,0 +1,6 @@
+[submodule "mouvement-2025-toulouse"]
+	path = mouvement-2025-toulouse
+	url = git@github.com:clapeyre/mouvement-2025-toulouse.git
+[submodule "pico-wallet-server"]
+	path = pico-wallet-server
+	url = git@github.com:clapeyre/pico-wallet-server.git
