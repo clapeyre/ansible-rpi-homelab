@@ -39,6 +39,12 @@
         enabled: yes
   tags: ['docker', 'setup']
 
+- name: Ensure docker group exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+  tags: ['docker', 'setup', 'users']
+
 - name: Add user '{{ ansible_user }}' to the docker group
   ansible.builtin.user:
     name: "{{ ansible_user }}" # ansible_user is usually the SSH user

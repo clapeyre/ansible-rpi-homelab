@@ -44,12 +44,19 @@
     # Add other relative data directory paths as defined in playbook vars or directly here
   tags: ['apps', 'deploy', 'volumes']
 
+- name: Copy docker-compose.yml to target directory
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/docker-compose.yml"
+    dest: "{{ project_base_path_on_pi }}/docker-compose.yml"
+    mode: '0644'
+  tags: ['apps', 'deploy', 'docker_compose']
+
 - name: Deploy Docker Compose stack from the synced project directory
   community.docker.docker_compose_v2:
     project_src: "{{ project_base_path_on_pi }}" # This directory on the Pi now contains docker-compose.yml
                                                  # and all necessary build contexts (e.g., ./webapp1_src)
-    build: yes # Rebuild images if Dockerfile or build context has changed
-    recreate: "smart" # Recreate containers if configuration or image has changed
+    build: always # Rebuild images if Dockerfile or build context has changed
+    recreate: "auto" # Recreate containers if configuration or image has changed
     remove_orphans: yes
     state: present # Ensures services are defined and running
   tags: ['apps', 'deploy', 'docker_compose']

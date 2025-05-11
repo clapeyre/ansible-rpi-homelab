@@ -10,7 +10,8 @@
     # Define paths for persistent data volumes on the Pi, relative to project_base_path_on_pi or absolute
     pihole_config_dir_on_pi: "{{ project_base_path_on_pi }}/pihole_config/etc-pihole"
     pihole_dnsmasq_dir_on_pi: "{{ project_base_path_on_pi }}/pihole_config/etc-dnsmasq.d"
-    webapp1_data_dir_on_pi: "{{ project_base_path_on_pi }}/pico-wallet-server"
+    pico_wallet_server_data_dir_on_pi: "{{ project_base_path_on_pi }}/pico-wallet-server"
+    mouvement_2025_toulouse_data_dir_on_pi: "{{ project_base_path_on_pi }}/mouvement-2025-toulouse"
     # Add other data directories as needed
 
   roles:
