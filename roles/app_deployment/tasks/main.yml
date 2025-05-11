@@ -1,0 +1,58 @@
+# roles/app_deployment/tasks/main.yml
+# Deploys the application stack
+---
+- name: Ensure base project directory exists on Pi
+  ansible.builtin.file:
+    path: "{{ project_base_path_on_pi }}" # From playbook vars
+    state: directory
+    mode: '0755'
+  tags: ['apps', 'deploy', 'setup']
+
+- name: Synchronize the Ansible project content to the Pi
+  ansible.posix.synchronize:
+    src: "{{ playbook_dir }}/" # playbook_dir is an Ansible magic variable for the dir containing the playbook.
+                               # This syncs the entire Ansible project root (including docker-compose.yml
+                               # and webappX_src submodules) to the Pi.
+    dest: "{{ project_base_path_on_pi }}/"
+    archive: yes
+    delete: yes # Delete files on dest that are not in src (use with caution if Pi has other files there)
+    recursive: yes
+    # Exclude .git itself from the main project, .gitmodules, and other Ansible-specific files.
+    # The content of submodules (webappX_src) is already checked out and will be synced as regular files.
+    rsync_opts:
+      - "--exclude=.git"
+      - "--exclude=.gitmodules"
+      - "--exclude=.gitignore"
+      - "--exclude=inventory.ini"
+      - "--exclude=ansible.cfg"
+      - "--exclude=*.md" # Exclude READMEs if not needed on Pi (or keep them)
+      - "--exclude=roles/" # Roles are for the control node, not the target
+      - "--exclude=*.sh" # Exclude local helper scripts if not needed on Pi
+  tags: ['apps', 'deploy', 'sync']
+
+- name: Ensure host directories for persistent data volumes exist on Pi
+  ansible.builtin.file:
+    path: "{{ project_base_path_on_pi }}/{{ item }}" # Paths are now relative to project_base_path_on_pi
+    state: directory
+    mode: '0755' # Or more restrictive if needed
+  loop:
+    # These directory names should match what's used in your docker-compose.yml volume mappings
+    # e.g., if docker-compose.yml has volumes: - ./pihole_config/etc-pihole:/etc/pihole
+    - "pihole_config/etc-pihole"
+    - "pihole_config/etc-dnsmasq.d"
+    - "webapp1_data"
+    # Add other relative data directory paths as defined in playbook vars or directly here
+  tags: ['apps', 'deploy', 'volumes']
+
+- name: Deploy Docker Compose stack from the synced project directory
+  community.docker.docker_compose_v2:
+    project_src: "{{ project_base_path_on_pi }}" # This directory on the Pi now contains docker-compose.yml
+                                                 # and all necessary build contexts (e.g., ./webapp1_src)
+    build: yes # Rebuild images if Dockerfile or build context has changed
+    recreate: "smart" # Recreate containers if configuration or image has changed
+    remove_orphans: yes
+    state: present # Ensures services are defined and running
+  tags: ['apps', 'deploy', 'docker_compose']
+  environment: # Pass environment variables to the docker compose command itself if needed
+    COMPOSE_HTTP_TIMEOUT: "300" # Increased timeout for potentially long image builds on Pi
+

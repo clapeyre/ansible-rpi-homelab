@@ -1,0 +1,11 @@
+# roles/app_deployment/vars/main.yml
+# Variables specific to the app_deployment role
+---
+# project_base_path_on_pi is defined globally in playbook.yml
+# You can define more specific paths or settings here if needed
+# e.g., list of web app submodule directories if you wanted to loop over them
+web_app_submodules:
+  - Mouvement
+  - pico-wallet-server
+  # Add more as they are created in your Ansible project root
+

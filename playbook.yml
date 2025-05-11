@@ -1,0 +1,25 @@
+# playbook.yml
+# This playbook configures a Raspberry Pi to run Docker services.
+---
+- name: Configure Raspberry Pi Docker Host and Deploy Services
+  hosts: raspberry_pis # Target hosts from inventory.ini
+  become: true         # Most tasks will require sudo
+
+  vars: # Global variables for the playbook
+    project_base_path_on_pi: "/srv/rpi-services" # Where the project files will be synced on the Pi
+    # Define paths for persistent data volumes on the Pi, relative to project_base_path_on_pi or absolute
+    pihole_config_dir_on_pi: "{{ project_base_path_on_pi }}/pihole_config/etc-pihole"
+    pihole_dnsmasq_dir_on_pi: "{{ project_base_path_on_pi }}/pihole_config/etc-dnsmasq.d"
+    webapp1_data_dir_on_pi: "{{ project_base_path_on_pi }}/pico-wallet-server"
+    # Add other data directories as needed
+
+  roles:
+    - role: common
+      tags: ['common', 'setup']
+    - role: docker
+      tags: ['docker', 'setup']
+    - role: app_deployment
+      tags: ['apps', 'deploy']
+
+# You could add more plays here, e.g., for backups or specific maintenance tasks
+

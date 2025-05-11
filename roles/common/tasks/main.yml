@@ -1,0 +1,24 @@
+# roles/common/tasks/main.yml
+# Basic system setup tasks
+---
+- name: Update apt cache and upgrade all packages
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: dist # 'dist' is equivalent to 'apt full-upgrade'
+  tags: ['common', 'setup', 'packages']
+
+- name: Install common prerequisite packages
+  ansible.builtin.apt:
+    name:
+      - git
+      - curl
+      # Add any other common utilities you need
+    state: present
+  tags: ['common', 'setup', 'packages']
+
+# Add tasks for setting timezone, locale, etc., if desired
+- name: Set timezone to Europe/Paris
+  community.general.timezone:
+    name: Europe/Paris
+  tags: ['common', 'setup', 'system']
+

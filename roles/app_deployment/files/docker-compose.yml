@@ -1,0 +1,67 @@
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8080:80/tcp" # Map Pi-hole's web interface to port 8080 on the Pi
+    environment:
+      TZ: 'Europe/Paris'
+      FTLCONF_webserver_api_password: 'cala77*GRIGESTE!'
+      # Add other Pi-hole specific environment variables if needed
+    volumes:
+      - './pihole/etc-pihole:/etc/pihole'
+      - './pihole/etc-dnsmasq.d:/etc/dnsmasq.d'
+    cap_add:
+      - NET_ADMIN # Required for Pi-hole to function correctly
+    restart: unless-stopped
+    networks:
+      # Define a custom network if you want to link it with other containers
+      # or use host networking if strictly necessary and you understand the implications.
+      # For Pi-hole, using host networking can simplify DNS resolution but be careful with port conflicts.
+      # If not using host networking, ensure the Pi-hole container gets a static IP or is easily discoverable.
+      - default # Or your custom network name
+
+  pico-wallet-server:
+    container_name: pico_wallet_server_container
+    build:
+      context: ./pico-wallet-server # Path to the directory containing your Flask app's Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # Map port 8000 on your Pi to port 8000 in the container
+                    # Change host port (left side) if 8000 is already used on your Pi
+    volumes:
+      # If your Flask app needs to persist data outside the container, define a volume:
+      # - ./my_flask_app_data:/app/data # Example: maps a host dir to /app/data in container
+      # For development, you might want to mount your code for live reloading:
+      - ./pico-wallet-server:/app
+    environment:
+      # Add any environment variables your Flask app needs
+      FLASK_ENV: production # or development
+      # DATABASE_URL: 'your_database_connection_string'
+      PYTHONUNBUFFERED: 1 # Useful for seeing print statements in Docker logs immediately
+    restart: unless-stopped
+    # depends_on:
+    #   - pihole # If your flask app needs pihole to be up first (unlikely for this use case)
+
+  mouvement:
+    container_name: mouvement_container
+    build:
+      context: ./Mouvement
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081" # Map port 8081 on your Pi to port 8081 in the container
+                    # Change host port (left side) if 8081 is already used on your Pi
+    volumes:
+      # If your Flask app needs to persist data outside the container, define a volume:
+      # - ./my_flask_app_data:/app/data # Example: maps a host dir to /app/data in container
+      # For development, you might want to mount your code for live reloading:
+      - ./Mouvement:/app
+    environment:
+      # Add any environment variables your Flask app needs
+      FLASK_ENV: production # or development
+      # DATABASE_URL: 'your_database_connection_string'
+      PYTHONUNBUFFERED: 1 # Useful for seeing print statements in Docker logs immediately
+    restart: unless-stopped
+
